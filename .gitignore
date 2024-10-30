@@ -1,0 +1,8 @@
+# ENV files
+.env
+
+# Virtual Environment Folders
+virt-polars/
+
+# Compiled bytecode of python files
+__pycache__
