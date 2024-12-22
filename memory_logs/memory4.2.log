@@ -1,0 +1,188 @@
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+   101    793.4 MiB    793.4 MiB           1   @profile(stream=log_file2)
+   102                                         def load_data(
+   103                                                 snowflake_session : Session,
+   104                                                 data : pl.DataFrame,
+   105                                                 snowflake_table: str,
+   106                                                 MODE : str) -> None:
+   107                                         
+   108    793.4 MiB      0.0 MiB           1       batch_size = 25000
+   109                                         
+   110    793.4 MiB      0.0 MiB           1       snowflake_table = snowflake_table.upper()
+   111                                         
+   112    793.4 MiB      0.0 MiB           1       if '_ARCHIVE' in snowflake_table:
+   113                                                 snowflake_table = snowflake_table.replace('_ARCHIVE', '')
+   114                                                 schema = dtype_dict[snowflake_table]
+   115                                             else:
+   116    793.4 MiB      0.0 MiB           1           schema = dtype_dict[snowflake_table]
+   117                                         
+   118    793.4 MiB      0.0 MiB           1       if data.is_empty():
+   119                                                 logger.warning(f"No data to load to {snowflake_table}.")
+   120                                                 return
+   121                                         
+   122    793.4 MiB      0.0 MiB           1       num_batches = ceil(data.height / batch_size)
+   123                                         
+   124    793.4 MiB  -1474.0 MiB           9       for batch_num in range(num_batches):
+   125    793.4 MiB  -1382.3 MiB           8           start_index = batch_num * batch_size
+   126    793.4 MiB  -1382.3 MiB           8           end_index = min(start_index + batch_size, data.height)
+   127                                         
+   128    793.4 MiB  -1382.2 MiB           8           batch_df = data.slice(start_index,  end_index - start_index)
+   129                                         
+   130    833.7 MiB  -1272.2 MiB           8           batch_dict = batch_df.to_dicts()
+   131                                         
+   132    833.7 MiB  -1594.0 MiB           8           logger.info(f"Creating Dataframe for {snowflake_table} batch {batch_num+1} Table...")
+   133                                         
+   134    791.1 MiB  -1950.5 MiB           8           snowpark_df = snowflake_session.create_dataframe(batch_dict, schema)
+   135                                         
+   136    791.1 MiB  -1610.2 MiB           8           logger.info(f'Loading batch {batch_num+1} / {num_batches} into {snowflake_table} table...')
+   137                                         
+   138    791.1 MiB  -1610.2 MiB           8           write_mode = MODE if batch_num == 0 else 'append'
+   139    750.3 MiB  -1800.8 MiB           8           snowpark_df.write.save_as_table(snowflake_table, mode=write_mode)
+   140                                         
+   141    750.3 MiB  -1474.0 MiB           8           logger.info(f'Loaded batch {batch_num+1} / {num_batches} into {snowflake_table} table...')
+
+
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+   101   1868.7 MiB   1868.7 MiB           1   @profile(stream=log_file2)
+   102                                         def load_data(
+   103                                                 snowflake_session : Session,
+   104                                                 data : pl.DataFrame,
+   105                                                 snowflake_table: str,
+   106                                                 MODE : str) -> None:
+   107                                         
+   108   1868.7 MiB      0.0 MiB           1       batch_size = 25000
+   109                                         
+   110   1868.7 MiB      0.0 MiB           1       snowflake_table = snowflake_table.upper()
+   111                                         
+   112   1868.7 MiB      0.0 MiB           1       if '_ARCHIVE' in snowflake_table:
+   113                                                 snowflake_table = snowflake_table.replace('_ARCHIVE', '')
+   114                                                 schema = dtype_dict[snowflake_table]
+   115                                             else:
+   116   1868.7 MiB      0.0 MiB           1           schema = dtype_dict[snowflake_table]
+   117                                         
+   118   1868.7 MiB      0.0 MiB           1       if data.is_empty():
+   119                                                 logger.warning(f"No data to load to {snowflake_table}.")
+   120                                                 return
+   121                                         
+   122   1868.7 MiB      0.0 MiB           1       num_batches = ceil(data.height / batch_size)
+   123                                         
+   124   1902.3 MiB  -2277.6 MiB           9       for batch_num in range(num_batches):
+   125   1902.3 MiB  -1830.7 MiB           8           start_index = batch_num * batch_size
+   126   1902.3 MiB  -1830.7 MiB           8           end_index = min(start_index + batch_size, data.height)
+   127                                         
+   128   1902.3 MiB  -1830.7 MiB           8           batch_df = data.slice(start_index,  end_index - start_index)
+   129                                         
+   130   1923.1 MiB  -1692.2 MiB           8           batch_dict = batch_df.to_dicts()
+   131                                         
+   132   1923.1 MiB  -1876.2 MiB           8           logger.info(f"Creating Dataframe for {snowflake_table} batch {batch_num+1} Table...")
+   133                                         
+   134   1901.5 MiB  -2138.8 MiB           8           snowpark_df = snowflake_session.create_dataframe(batch_dict, schema)
+   135                                         
+   136   1901.5 MiB  -1981.9 MiB           8           logger.info(f'Loading batch {batch_num+1} / {num_batches} into {snowflake_table} table...')
+   137                                         
+   138   1901.5 MiB  -1981.9 MiB           8           write_mode = MODE if batch_num == 0 else 'append'
+   139   1902.3 MiB  -2271.0 MiB           8           snowpark_df.write.save_as_table(snowflake_table, mode=write_mode)
+   140                                         
+   141   1902.3 MiB  -2277.6 MiB           8           logger.info(f'Loaded batch {batch_num+1} / {num_batches} into {snowflake_table} table...')
+
+
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+   101   2255.7 MiB   2255.7 MiB           1   @profile(stream=log_file2)
+   102                                         def load_data(
+   103                                                 snowflake_session : Session,
+   104                                                 data : pl.DataFrame,
+   105                                                 snowflake_table: str,
+   106                                                 MODE : str) -> None:
+   107                                         
+   108   2255.7 MiB      0.0 MiB           1       batch_size = 25000
+   109                                         
+   110   2255.7 MiB      0.0 MiB           1       snowflake_table = snowflake_table.upper()
+   111                                         
+   112   2255.7 MiB      0.0 MiB           1       if '_ARCHIVE' in snowflake_table:
+   113                                                 snowflake_table = snowflake_table.replace('_ARCHIVE', '')
+   114                                                 schema = dtype_dict[snowflake_table]
+   115                                             else:
+   116   2255.7 MiB      0.0 MiB           1           schema = dtype_dict[snowflake_table]
+   117                                         
+   118   2255.7 MiB      0.0 MiB           1       if data.is_empty():
+   119                                                 logger.warning(f"No data to load to {snowflake_table}.")
+   120                                                 return
+   121                                         
+   122   2255.7 MiB      0.0 MiB           1       num_batches = ceil(data.height / batch_size)
+   123                                         
+   124   2255.7 MiB  -2013.7 MiB           9       for batch_num in range(num_batches):
+   125   2255.7 MiB  -1636.3 MiB           8           start_index = batch_num * batch_size
+   126   2255.7 MiB  -1636.3 MiB           8           end_index = min(start_index + batch_size, data.height)
+   127                                         
+   128   2255.7 MiB  -1636.3 MiB           8           batch_df = data.slice(start_index,  end_index - start_index)
+   129                                         
+   130   2288.0 MiB  -1565.2 MiB           8           batch_dict = batch_df.to_dicts()
+   131                                         
+   132   2288.0 MiB  -1823.5 MiB           8           logger.info(f"Creating Dataframe for {snowflake_table} batch {batch_num+1} Table...")
+   133                                         
+   134   2306.3 MiB  -2130.1 MiB           8           snowpark_df = snowflake_session.create_dataframe(batch_dict, schema)
+   135                                         
+   136   2306.3 MiB  -2276.9 MiB           8           logger.info(f'Loading batch {batch_num+1} / {num_batches} into {snowflake_table} table...')
+   137                                         
+   138   2306.3 MiB  -2276.9 MiB           8           write_mode = MODE if batch_num == 0 else 'append'
+   139   2248.6 MiB  -2475.8 MiB           8           snowpark_df.write.save_as_table(snowflake_table, mode=write_mode)
+   140                                         
+   141   2248.6 MiB  -2013.7 MiB           8           logger.info(f'Loaded batch {batch_num+1} / {num_batches} into {snowflake_table} table...')
+
+
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+   101   2246.9 MiB   2246.9 MiB           1   @profile(stream=log_file2)
+   102                                         def load_data(
+   103                                                 snowflake_session : Session,
+   104                                                 data : pl.DataFrame,
+   105                                                 snowflake_table: str,
+   106                                                 MODE : str) -> None:
+   107                                         
+   108   2246.9 MiB      0.0 MiB           1       batch_size = 25000
+   109                                         
+   110   2246.9 MiB      0.0 MiB           1       snowflake_table = snowflake_table.upper()
+   111                                         
+   112   2246.9 MiB      0.0 MiB           1       if '_ARCHIVE' in snowflake_table:
+   113                                                 snowflake_table = snowflake_table.replace('_ARCHIVE', '')
+   114                                                 schema = dtype_dict[snowflake_table]
+   115                                             else:
+   116   2246.9 MiB      0.0 MiB           1           schema = dtype_dict[snowflake_table]
+   117                                         
+   118   2246.9 MiB      0.0 MiB           1       if data.is_empty():
+   119                                                 logger.warning(f"No data to load to {snowflake_table}.")
+   120                                                 return
+   121                                         
+   122   2246.9 MiB      0.0 MiB           1       num_batches = ceil(data.height / batch_size)
+   123                                         
+   124   2246.9 MiB  -1013.4 MiB           8       for batch_num in range(num_batches):
+   125   2246.9 MiB  -1795.7 MiB           7           start_index = batch_num * batch_size
+   126   2246.9 MiB  -1795.7 MiB           7           end_index = min(start_index + batch_size, data.height)
+   127                                         
+   128   2246.9 MiB  -1795.7 MiB           7           batch_df = data.slice(start_index,  end_index - start_index)
+   129                                         
+   130   2253.4 MiB  -1742.1 MiB           7           batch_dict = batch_df.to_dicts()
+   131                                         
+   132   2253.4 MiB  -1787.1 MiB           7           logger.info(f"Creating Dataframe for {snowflake_table} batch {batch_num+1} Table...")
+   133                                         
+   134   2232.5 MiB  -1961.1 MiB           7           snowpark_df = snowflake_session.create_dataframe(batch_dict, schema)
+   135                                         
+   136   2232.5 MiB  -1815.2 MiB           7           logger.info(f'Loading batch {batch_num+1} / {num_batches} into {snowflake_table} table...')
+   137                                         
+   138   2232.5 MiB  -1815.2 MiB           7           write_mode = MODE if batch_num == 0 else 'append'
+   139   2079.4 MiB  -2085.4 MiB           7           snowpark_df.write.save_as_table(snowflake_table, mode=write_mode)
+   140                                         
+   141   2079.4 MiB  -1013.4 MiB           7           logger.info(f'Loaded batch {batch_num+1} / {num_batches} into {snowflake_table} table...')
+
+

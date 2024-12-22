@@ -1,0 +1,74 @@
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    23     80.6 MiB     80.6 MiB           1   @profile(stream=log_file)
+    24                                         def query_data(
+    25                                                 pg_cursor,
+    26                                                 query: str,
+    27                                                 rds_table: str,
+    28                                                 dtype_dictionary: Dtype_Dictionary,
+    29                                                 has_added_column : bool,
+    30                                                 snowflake_session : Session,
+    31                                                 snowflake_table: str,
+    32                                                 ) -> None:
+    33                                             
+    34                                             # pg_cursor.itersize = 200000
+    35     80.6 MiB      0.0 MiB           1       logger.info(f"Querying data from {rds_table} in RDS...")
+    36     80.6 MiB      0.0 MiB           1       pg_cursor.execute(f"{query}")
+    37     80.6 MiB      0.0 MiB           1       logger.info(f"Fetching data from {rds_table} in RDS...")
+    38   2300.3 MiB   2219.6 MiB           1       rows = pg_cursor.fetchall()
+    39                                             # rows = pg_cursor.fetchmany(pg_cursor.itersize)
+    40                                             # columns = list(pg_cursor.description)
+    41                                         
+    42                                             # column_names = [desc[0] for desc in pg_cursor.description] 
+    43                                         
+    44                                         
+    45   2300.3 MiB      0.0 MiB           1       schema = dtype_dict[snowflake_table]
+    46                                             # schema = {"id","short_id","partner_id","account_id","card_number_mask","source","type","code","points","balance","reference_id","original_reference_id","properties","metadata","source_ip_address","timestamp","details"}
+    47   2300.3 MiB      0.0 MiB           1       curr_datetime = datetime.now()
+    48                                         
+    49   2300.3 MiB   -522.5 MiB           2       snowpark_df = snowflake_session.create_dataframe(
+    50   2300.3 MiB      0.0 MiB           1           rows, schema)
+    51   1778.0 MiB   -522.3 MiB           1       df_with_date = snowpark_df.with_column("INGESTED_DATE", lit(curr_datetime))
+    52                                             
+    53   1778.0 MiB      0.0 MiB           1       return df_with_date
+
+
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    23    315.7 MiB    315.7 MiB           1   @profile(stream=log_file)
+    24                                         def query_data(
+    25                                                 pg_cursor,
+    26                                                 query: str,
+    27                                                 rds_table: str,
+    28                                                 dtype_dictionary: Dtype_Dictionary,
+    29                                                 has_added_column : bool,
+    30                                                 snowflake_session : Session,
+    31                                                 snowflake_table: str,
+    32                                                 ) -> None:
+    33                                             
+    34                                             # pg_cursor.itersize = 200000
+    35    315.7 MiB      0.0 MiB           1       logger.info(f"Querying data from {rds_table} in RDS...")
+    36    315.7 MiB      0.1 MiB           1       pg_cursor.execute(f"{query}")
+    37    315.7 MiB      0.0 MiB           1       logger.info(f"Fetching data from {rds_table} in RDS...")
+    38    305.9 MiB     -9.9 MiB           1       rows = pg_cursor.fetchall()
+    39                                             # rows = pg_cursor.fetchmany(pg_cursor.itersize)
+    40                                             # columns = list(pg_cursor.description)
+    41                                         
+    42                                             # column_names = [desc[0] for desc in pg_cursor.description] 
+    43                                         
+    44                                         
+    45    305.9 MiB      0.0 MiB           1       schema = dtype_dict[snowflake_table]
+    46                                             # schema = {"id","short_id","partner_id","account_id","card_number_mask","source","type","code","points","balance","reference_id","original_reference_id","properties","metadata","source_ip_address","timestamp","details"}
+    47    305.9 MiB      0.0 MiB           1       curr_datetime = datetime.now()
+    48                                         
+    49    335.7 MiB     29.8 MiB           2       snowpark_df = snowflake_session.create_dataframe(
+    50    305.9 MiB      0.0 MiB           1           rows, schema)
+    51    335.7 MiB      0.0 MiB           1       df_with_date = snowpark_df.with_column("INGESTED_DATE", lit(curr_datetime))
+    52                                             
+    53    335.7 MiB      0.0 MiB           1       return df_with_date
+
+

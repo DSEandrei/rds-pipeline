@@ -1,0 +1,40 @@
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    21     80.6 MiB     80.6 MiB           1   @profile(stream=log_file)
+    22                                         def query_data(
+    23                                                 pg_cursor,
+    24                                                 query: str,
+    25                                                 rds_table: str,
+    26                                                 dtype_dictionary: Dtype_Dictionary,
+    27                                                 has_added_column : bool,
+    28                                                 snowflake_session : Session,
+    29                                                 snowflake_table: str,
+    30                                                 ) -> None:
+    31                                             
+    32     80.6 MiB      0.0 MiB           1       pg_cursor.itersize = 200000
+    33     80.6 MiB      0.0 MiB           1       logger.info(f"Querying data from {rds_table} in RDS...")
+    34     80.6 MiB      0.0 MiB           1       pg_cursor.execute(f"{query}")
+    35     80.6 MiB      0.0 MiB           1       logger.info(f"Fetching data from {rds_table} in RDS...")
+    36    392.9 MiB    312.3 MiB           1       rows = pg_cursor.fetchmany(pg_cursor.itersize)
+    37    392.9 MiB      0.0 MiB           1       columns = list(pg_cursor.description)
+    38                                         
+    39                                             # column_names = [desc[0] for desc in pg_cursor.description] 
+    40                                         
+    41                                             
+    42   1380.9 MiB    -61.2 MiB           5       while len(rows) > 0:
+    43   1631.9 MiB   1449.7 MiB           8           process_records(rows,
+    44   1380.9 MiB   -575.6 MiB           4                           columns,
+    45   1380.9 MiB      0.0 MiB           4                           rds_table,
+    46   1380.9 MiB      0.0 MiB           4                           dtype_dictionary,
+    47   1380.9 MiB      0.0 MiB           4                           has_added_column,
+    48   1380.9 MiB      0.0 MiB           4                           snowflake_session,
+    49   1380.9 MiB      0.0 MiB           4                           snowflake_table
+    50                                                                 )
+    51   1381.9 MiB   -579.3 MiB           4           rows = pg_cursor.fetchmany(pg_cursor.itersize)
+    52                                         
+    53                                         
+    54   1321.7 MiB    -59.2 MiB           1       return
+
+
