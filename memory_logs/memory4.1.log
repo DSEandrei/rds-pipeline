@@ -1,0 +1,200 @@
+ Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    56    393.0 MiB    393.0 MiB           1   @profile(stream=log_file1)
+    57                                         def process_records(rows: List,
+    58                                                             columns: List,
+    59                                                             rds_table: str,
+    60                                                             dtype_dictionary: Dtype_Dictionary,
+    61                                                             has_added_column : bool,
+    62                                                             snowflake_session : Session,
+    63                                                             snowflake_table: str,
+    64                                                             ):
+    65                                             
+    66    393.0 MiB      0.0 MiB           1       columns_dict = {}
+    67    393.0 MiB      0.0 MiB           1       logger.info(f"Mapping column types...")
+    68    393.0 MiB      0.0 MiB          18       for col in columns:
+    69    393.0 MiB      0.0 MiB          17           if col.type_code in (1184, 1114):                                           # The type code for datetime is typically 
+    70    393.0 MiB      0.0 MiB           1               columns_dict[col.name.upper()] = pl.Datetime                            # represented as 1114 for timestamp and 1184 for timestamptz
+    71    393.0 MiB      0.0 MiB          16           elif col.type_code == 3802:                                                 # represented as 3802 for Object type
+    72    393.0 MiB      0.0 MiB           2               columns_dict[col.name.upper()] = pl.Object                              # represented as 1082 for Date type
+    73    393.0 MiB      0.0 MiB          14           elif col.type_code == 1082:                                                 # - ChatGPT
+    74                                                     columns_dict[col.name.upper()] = pl.Date
+    75                                                 else:
+    76    393.0 MiB      0.0 MiB          14               columns_dict[col.name.upper()] = pl.String
+    77    393.0 MiB      0.0 MiB           1       logger.info(f"Making dataframe from {rds_table} in RDS...")
+    78                                             
+    79    792.0 MiB    399.0 MiB           2       data = pl.DataFrame(
+    80    393.0 MiB      0.0 MiB           1           rows,
+    81    393.0 MiB      0.0 MiB           1           schema = columns_dict,
+    82    393.0 MiB      0.0 MiB           1           orient='row'
+    83                                             )
+    84                                         
+    85    792.0 MiB      0.0 MiB           1       logger.info(f"Done querying data from {rds_table} in RDS...")
+    86                                         
+    87    792.0 MiB      0.0 MiB           1       if has_added_column:
+    88    792.0 MiB      0.0 MiB           1           curr_datetime = datetime.now()
+    89                                         
+    90    793.2 MiB      1.1 MiB           2           data_with_date = data.with_columns(
+    91    792.1 MiB      0.1 MiB           1               pl.lit(curr_datetime).alias('INGESTED_DATE')
+    92                                                 )
+    93    793.3 MiB      0.1 MiB           1           columns_dict['INGESTED_DATE'] = pl.Datetime
+    94                                         
+    95    793.4 MiB      0.0 MiB           1           dtype_dictionary.set_dictionary(columns_dict)
+    96    342.3 MiB   -451.1 MiB           1           load_data(snowflake_session, data_with_date, snowflake_table, 'overwrite')
+    97                                             else:
+    98                                                 dtype_dictionary.set_dictionary(columns_dict)
+    99                                                 load_data(snowflake_session, data, snowflake_table, 'overwrite')
+
+
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    56    698.6 MiB    698.6 MiB           1   @profile(stream=log_file1)
+    57                                         def process_records(rows: List,
+    58                                                             columns: List,
+    59                                                             rds_table: str,
+    60                                                             dtype_dictionary: Dtype_Dictionary,
+    61                                                             has_added_column : bool,
+    62                                                             snowflake_session : Session,
+    63                                                             snowflake_table: str,
+    64                                                             ):
+    65                                             
+    66    698.6 MiB      0.0 MiB           1       columns_dict = {}
+    67    698.6 MiB      0.0 MiB           1       logger.info(f"Mapping column types...")
+    68    698.6 MiB      0.0 MiB          18       for col in columns:
+    69    698.6 MiB      0.0 MiB          17           if col.type_code in (1184, 1114):                                           # The type code for datetime is typically 
+    70    698.6 MiB      0.0 MiB           1               columns_dict[col.name.upper()] = pl.Datetime                            # represented as 1114 for timestamp and 1184 for timestamptz
+    71    698.6 MiB      0.0 MiB          16           elif col.type_code == 3802:                                                 # represented as 3802 for Object type
+    72    698.6 MiB      0.0 MiB           2               columns_dict[col.name.upper()] = pl.Object                              # represented as 1082 for Date type
+    73    698.6 MiB      0.0 MiB          14           elif col.type_code == 1082:                                                 # - ChatGPT
+    74                                                     columns_dict[col.name.upper()] = pl.Date
+    75                                                 else:
+    76    698.6 MiB      0.0 MiB          14               columns_dict[col.name.upper()] = pl.String
+    77    698.6 MiB      0.0 MiB           1       logger.info(f"Making dataframe from {rds_table} in RDS...")
+    78                                             
+    79   1868.5 MiB   1169.9 MiB           2       data = pl.DataFrame(
+    80    698.6 MiB      0.0 MiB           1           rows,
+    81    698.6 MiB      0.0 MiB           1           schema = columns_dict,
+    82    698.6 MiB      0.0 MiB           1           orient='row'
+    83                                             )
+    84                                         
+    85   1868.5 MiB      0.1 MiB           1       logger.info(f"Done querying data from {rds_table} in RDS...")
+    86                                         
+    87   1868.5 MiB      0.0 MiB           1       if has_added_column:
+    88   1868.5 MiB      0.0 MiB           1           curr_datetime = datetime.now()
+    89                                         
+    90   1868.6 MiB      0.1 MiB           2           data_with_date = data.with_columns(
+    91   1868.6 MiB      0.0 MiB           1               pl.lit(curr_datetime).alias('INGESTED_DATE')
+    92                                                 )
+    93   1868.6 MiB      0.0 MiB           1           columns_dict['INGESTED_DATE'] = pl.Datetime
+    94                                         
+    95   1868.6 MiB      0.0 MiB           1           dtype_dictionary.set_dictionary(columns_dict)
+    96   1444.4 MiB   -424.2 MiB           1           load_data(snowflake_session, data_with_date, snowflake_table, 'overwrite')
+    97                                             else:
+    98                                                 dtype_dictionary.set_dictionary(columns_dict)
+    99                                                 load_data(snowflake_session, data, snowflake_table, 'overwrite')
+
+
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    56    878.9 MiB    878.9 MiB           1   @profile(stream=log_file1)
+    57                                         def process_records(rows: List,
+    58                                                             columns: List,
+    59                                                             rds_table: str,
+    60                                                             dtype_dictionary: Dtype_Dictionary,
+    61                                                             has_added_column : bool,
+    62                                                             snowflake_session : Session,
+    63                                                             snowflake_table: str,
+    64                                                             ):
+    65                                             
+    66    878.9 MiB      0.0 MiB           1       columns_dict = {}
+    67    878.9 MiB      0.0 MiB           1       logger.info(f"Mapping column types...")
+    68    878.9 MiB      0.0 MiB          18       for col in columns:
+    69    878.9 MiB      0.0 MiB          17           if col.type_code in (1184, 1114):                                           # The type code for datetime is typically 
+    70    878.9 MiB      0.0 MiB           1               columns_dict[col.name.upper()] = pl.Datetime                            # represented as 1114 for timestamp and 1184 for timestamptz
+    71    878.9 MiB      0.0 MiB          16           elif col.type_code == 3802:                                                 # represented as 3802 for Object type
+    72    878.9 MiB      0.0 MiB           2               columns_dict[col.name.upper()] = pl.Object                              # represented as 1082 for Date type
+    73    878.9 MiB      0.0 MiB          14           elif col.type_code == 1082:                                                 # - ChatGPT
+    74                                                     columns_dict[col.name.upper()] = pl.Date
+    75                                                 else:
+    76    878.9 MiB      0.0 MiB          14               columns_dict[col.name.upper()] = pl.String
+    77    878.9 MiB      0.0 MiB           1       logger.info(f"Making dataframe from {rds_table} in RDS...")
+    78                                             
+    79   2255.6 MiB   1376.6 MiB           2       data = pl.DataFrame(
+    80    878.9 MiB      0.0 MiB           1           rows,
+    81    878.9 MiB      0.0 MiB           1           schema = columns_dict,
+    82    878.9 MiB      0.0 MiB           1           orient='row'
+    83                                             )
+    84                                         
+    85   2255.6 MiB      0.0 MiB           1       logger.info(f"Done querying data from {rds_table} in RDS...")
+    86                                         
+    87   2255.6 MiB      0.0 MiB           1       if has_added_column:
+    88   2255.6 MiB      0.0 MiB           1           curr_datetime = datetime.now()
+    89                                         
+    90   2255.7 MiB      0.1 MiB           2           data_with_date = data.with_columns(
+    91   2255.6 MiB      0.0 MiB           1               pl.lit(curr_datetime).alias('INGESTED_DATE')
+    92                                                 )
+    93   2255.7 MiB      0.0 MiB           1           columns_dict['INGESTED_DATE'] = pl.Datetime
+    94                                         
+    95   2255.7 MiB      0.0 MiB           1           dtype_dictionary.set_dictionary(columns_dict)
+    96   1811.4 MiB   -444.2 MiB           1           load_data(snowflake_session, data_with_date, snowflake_table, 'overwrite')
+    97                                             else:
+    98                                                 dtype_dictionary.set_dictionary(columns_dict)
+    99                                                 load_data(snowflake_session, data, snowflake_table, 'overwrite')
+
+
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    56   1380.9 MiB   1380.9 MiB           1   @profile(stream=log_file1)
+    57                                         def process_records(rows: List,
+    58                                                             columns: List,
+    59                                                             rds_table: str,
+    60                                                             dtype_dictionary: Dtype_Dictionary,
+    61                                                             has_added_column : bool,
+    62                                                             snowflake_session : Session,
+    63                                                             snowflake_table: str,
+    64                                                             ):
+    65                                             
+    66   1380.9 MiB      0.0 MiB           1       columns_dict = {}
+    67   1380.9 MiB      0.0 MiB           1       logger.info(f"Mapping column types...")
+    68   1380.9 MiB      0.0 MiB          18       for col in columns:
+    69   1380.9 MiB      0.0 MiB          17           if col.type_code in (1184, 1114):                                           # The type code for datetime is typically 
+    70   1380.9 MiB      0.0 MiB           1               columns_dict[col.name.upper()] = pl.Datetime                            # represented as 1114 for timestamp and 1184 for timestamptz
+    71   1380.9 MiB      0.0 MiB          16           elif col.type_code == 3802:                                                 # represented as 3802 for Object type
+    72   1380.9 MiB      0.0 MiB           2               columns_dict[col.name.upper()] = pl.Object                              # represented as 1082 for Date type
+    73   1380.9 MiB      0.0 MiB          14           elif col.type_code == 1082:                                                 # - ChatGPT
+    74                                                     columns_dict[col.name.upper()] = pl.Date
+    75                                                 else:
+    76   1380.9 MiB      0.0 MiB          14               columns_dict[col.name.upper()] = pl.String
+    77   1380.9 MiB      0.0 MiB           1       logger.info(f"Making dataframe from {rds_table} in RDS...")
+    78                                             
+    79   2246.9 MiB    866.0 MiB           2       data = pl.DataFrame(
+    80   1380.9 MiB      0.0 MiB           1           rows,
+    81   1380.9 MiB      0.0 MiB           1           schema = columns_dict,
+    82   1380.9 MiB      0.0 MiB           1           orient='row'
+    83                                             )
+    84                                         
+    85   2246.9 MiB      0.0 MiB           1       logger.info(f"Done querying data from {rds_table} in RDS...")
+    86                                         
+    87   2246.9 MiB      0.0 MiB           1       if has_added_column:
+    88   2246.9 MiB      0.0 MiB           1           curr_datetime = datetime.now()
+    89                                         
+    90   2246.9 MiB      0.0 MiB           2           data_with_date = data.with_columns(
+    91   2246.9 MiB      0.0 MiB           1               pl.lit(curr_datetime).alias('INGESTED_DATE')
+    92                                                 )
+    93   2246.9 MiB      0.0 MiB           1           columns_dict['INGESTED_DATE'] = pl.Datetime
+    94                                         
+    95   2246.9 MiB      0.0 MiB           1           dtype_dictionary.set_dictionary(columns_dict)
+    96   1854.2 MiB   -392.7 MiB           1           load_data(snowflake_session, data_with_date, snowflake_table, 'overwrite')
+    97                                             else:
+    98                                                 dtype_dictionary.set_dictionary(columns_dict)
+    99                                                 load_data(snowflake_session, data, snowflake_table, 'overwrite')
+
+

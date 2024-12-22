@@ -1,0 +1,60 @@
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/utils.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    18     82.6 MiB     82.6 MiB           1   @profile(stream=log_file)
+    19                                         def query_data(
+    20                                                 pg_cursor,
+    21                                                 query: str,
+    22                                                 rds_table: str,
+    23                                                 dtype_dictionary: Dtype_Dictionary,
+    24                                                 has_added_column : bool
+    25                                                 ) -> List[Tuple]:
+    26     82.6 MiB      0.0 MiB           1       rows = []
+    27     82.6 MiB      0.0 MiB           1       pg_cursor.itersize = 100000
+    28     82.6 MiB      0.0 MiB           1       logger.info(f"Querying data from {rds_table} in RDS...")
+    29    463.3 MiB    380.7 MiB           1       pg_cursor.execute(f"{query}")
+    30    463.3 MiB      0.0 MiB           1       columns = list(pg_cursor.description)
+    31    463.4 MiB      0.1 MiB           1       logger.info(f"Fetching data from {rds_table} in RDS...")
+    32                                             # rows = pg_cursor.fetchall()
+    33                                             # cptLigne = 0
+    34   1758.0 MiB -19137386.4 MiB      726052       for rec in pg_cursor:
+    35   1758.0 MiB -19138719.8 MiB      726051           rows.append(rec)
+    36                                         
+    37   1576.5 MiB   -181.5 MiB           1       print(size(sys.getsizeof(rows), system=alternative))
+    38   1576.5 MiB      0.0 MiB           1       columns_dict = {}
+    39   1576.6 MiB      0.1 MiB           1       logger.info(f"Mapping column types...")
+    40   1576.6 MiB    -54.5 MiB          18       for col in columns:
+    41   1576.6 MiB    -67.6 MiB          17           if col.type_code in (1184, 1114):                                           # The type code for datetime is typically 
+    42   1570.2 MiB     -6.4 MiB           1               columns_dict[col.name.upper()] = pl.Datetime                            # represented as 1114 for timestamp and 1184 for timestamptz
+    43   1576.6 MiB    -62.2 MiB          16           elif col.type_code == 3802:                                                 # represented as 3802 for Object type
+    44   1570.2 MiB    -12.8 MiB           2               columns_dict[col.name.upper()] = pl.Object                              # represented as 1082 for Date type
+    45   1576.6 MiB    -49.5 MiB          14           elif col.type_code == 1082:                                                 # - ChatGPT
+    46                                                     columns_dict[col.name.upper()] = pl.Date
+    47                                                 else:
+    48   1576.6 MiB    -49.5 MiB          14               columns_dict[col.name.upper()] = pl.String
+    49   1552.9 MiB    -23.7 MiB           1       logger.info(f"Making dataframe from {rds_table} in RDS...")
+    50                                             
+    51   2217.6 MiB    664.7 MiB           2       data = pl.LazyFrame(
+    52   1552.9 MiB      0.0 MiB           1           rows,
+    53   1552.9 MiB      0.0 MiB           1           schema = columns_dict,
+    54   1552.9 MiB      0.0 MiB           1           orient='row'
+    55                                             )
+    56                                         
+    57   2219.2 MiB      1.6 MiB           1       logger.info(f"Done querying data from {rds_table} in RDS...")
+    58                                         
+    59   2219.2 MiB      0.0 MiB           1       if has_added_column:
+    60   2219.2 MiB      0.0 MiB           1           curr_datetime = datetime.now()
+    61                                         
+    62   2221.8 MiB      2.1 MiB           2           data_with_date = data.with_columns(
+    63   2219.8 MiB      0.5 MiB           1               pl.lit(curr_datetime).alias('INGESTED_DATE')
+    64                                                 )
+    65   2221.8 MiB      0.0 MiB           1           columns_dict['INGESTED_DATE'] = pl.Datetime
+    66                                         
+    67   2221.9 MiB      0.0 MiB           1           dtype_dictionary.set_dictionary(columns_dict)
+    68   2221.9 MiB      0.0 MiB           1           return data_with_date
+    69                                             else:
+    70                                                 dtype_dictionary.set_dictionary(columns_dict)
+    71                                                 return data
+
+

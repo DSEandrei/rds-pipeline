@@ -1,0 +1,83 @@
+Filename: /Users/christianandreipalma/Documents/Python/rds-pipeline/polars/src/main.py
+
+Line #    Mem usage    Increment  Occurrences   Line Contents
+=============================================================
+    20     72.1 MiB     72.1 MiB           1   @profile(stream=log_file)
+    21                                         def main(e, c) -> None:
+    22     72.1 MiB      0.0 MiB           1       start_time = datetime.now()
+    23                                         
+    24     72.1 MiB      0.0 MiB           1       load_dotenv()
+    25                                         
+    26     72.1 MiB      0.0 MiB           1       logger.info("Initializing RDS connection...")
+    27                                         
+    28     73.3 MiB      1.2 MiB           2       pg_conn = psycopg2.connect(
+    29                                         
+    30     72.1 MiB      0.0 MiB           1           host = os.environ.get('RDS_HOST'),
+    31     72.1 MiB      0.0 MiB           1           dbname = os.environ.get('RDS_DATABASE'),
+    32     72.1 MiB      0.0 MiB           1           user = os.environ.get('RDS_USER'),
+    33     72.1 MiB      0.0 MiB           1           password = os.environ.get('RDS_PASSWORD')
+    34                                         
+    35                                             )
+    36                                         
+    37     73.3 MiB      0.0 MiB           1       logger.info("Initializing Snowflake connection...")
+    38                                         
+    39     73.3 MiB      0.0 MiB           1       snowflake_connection_params = {
+    40     73.3 MiB      0.0 MiB           1           'account' : os.environ.get('SNOWFLAKE_ACCOUNT'),
+    41     73.3 MiB      0.0 MiB           1           'user' : os.environ.get('SNOWFLAKE_USER'),
+    42     73.3 MiB      0.0 MiB           1           'password': os.environ.get('SNOWFLAKE_PASSWORD'),
+    43     73.3 MiB      0.0 MiB           1           'role': os.environ.get('SNOWFLAKE_ROLE'),
+    44     73.3 MiB      0.0 MiB           1           'warehouse' : os.environ.get('SNOWFLAKE_WAREHOUSE'),
+    45     73.3 MiB      0.0 MiB           1           'database' : os.environ.get('SNOWFLAKE_DATABASE'),
+    46     73.3 MiB      0.0 MiB           1           'schema' : os.environ.get('SNOWFLAKE_SCHEMA')
+    47                                             }
+    48                                         
+    49     73.3 MiB      0.0 MiB           1       try:
+    50     73.3 MiB      0.0 MiB           1           logger.info('Connecting to Snowflake...')
+    51     81.0 MiB      7.6 MiB           1           session = Session.builder.configs(snowflake_connection_params).create()
+    52     81.4 MiB      0.5 MiB           1           session.sql(f'USE WAREHOUSE {os.environ.get("SNOWFLAKE_WAREHOUSE")}').collect()
+    53     81.4 MiB      0.0 MiB           1           logger.success('Successfully connected to Snowflake!')
+    54                                         
+    55     81.4 MiB      0.0 MiB           1           logger.info('Altering timezone to UTC...')
+    56     81.5 MiB      0.0 MiB           1           session.sql("ALTER SESSION SET TIMEZONE = 'UTC'").collect()
+    57                                         
+    58    400.5 MiB      0.0 MiB           3           for i, item in enumerate(QUERY_TABLES):
+    59    351.7 MiB      0.0 MiB           2               logger.info('Connecting to RDS...')
+    60    351.0 MiB     -0.8 MiB           2               pg_cursor = pg_conn.cursor(name=f'rds_cursor_{i+1}')
+    61                                         
+    62    351.0 MiB      0.0 MiB           2               rds_table = item["rds_table"]
+    63    351.0 MiB      0.0 MiB           2               query = item["query"]
+    64    351.0 MiB      0.0 MiB           2               snowflake_table = item["snowflake_table"].upper()
+    65                                         
+    66    351.0 MiB      0.0 MiB           2               logger.info(f"Querying data from {rds_table} in RDS...")
+    67   2148.3 MiB   2099.2 MiB           4               data = query_data(pg_cursor,
+    68    351.0 MiB  -1797.4 MiB           2                           query,
+    69    351.0 MiB      0.0 MiB           2                           rds_table,
+    70    351.0 MiB      0.0 MiB           2                           session,
+    71    351.0 MiB      0.0 MiB           2                           snowflake_table)
+    72                                         
+    73   2148.9 MiB  -1764.4 MiB           2               logger.info('Loading data into Snowflake...')
+    74   2148.9 MiB  -3710.8 MiB           4               load_data(    
+    75   2148.9 MiB  -1765.6 MiB           2                         data,
+    76   2148.9 MiB  -1765.6 MiB           2                         snowflake_table)
+    77                                         
+    78   1951.7 MiB  -1944.8 MiB           2               logger.info(f"Tables : {i+1} / {len(QUERY_TABLES)}")
+    79                                         
+    80                                                     # Manually de-allocates memory
+    81   1951.7 MiB  -1550.3 MiB           2               data = None
+    82    400.5 MiB  -3151.2 MiB           2               gc.collect()
+    83                                             except Exception as e:
+    84                                                 logger.error('Closing connections to RDS and Snowflake...')
+    85                                                 logger.error(e)
+    86                                             finally:
+    87    390.5 MiB    -10.0 MiB           1           pg_cursor.close()
+    88    390.8 MiB      0.3 MiB           1           pg_conn.close()
+    89    274.5 MiB   -116.3 MiB           1           session.close()
+    90                                                  
+    91    274.5 MiB      0.0 MiB           1       end_time = datetime.now()
+    92    274.5 MiB      0.0 MiB           1       total_runtime = end_time - start_time
+    93                                         
+    94    274.5 MiB      0.0 MiB           1       logger.info(f"Start of run time: {start_time}")
+    95    274.5 MiB      0.0 MiB           1       logger.info(f"End tme: {end_time}")
+    96    274.5 MiB      0.0 MiB           1       logger.info(f"Total runtim: {total_runtime}")
+
+
