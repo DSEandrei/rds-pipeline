@@ -9,14 +9,7 @@ from loguru import logger
 from datetime import datetime
 from src.utils import query_data, load_data
 from src.config import QUERY_TABLES
-from memory_profiler import profile
 
-
-# Disable SSL verification
-ssl._create_default_https_context = ssl._create_unverified_context
-log_file= open('memory_logs/memory_main.log', 'w+')
-
-@profile(stream=log_file)
 def main(e, c) -> None:
     start_time = datetime.now()
 
