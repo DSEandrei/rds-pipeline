@@ -3,14 +3,8 @@ from loguru import logger
 from snowflake.snowpark import Session
 from snowflake.snowpark.functions import lit
 from datetime import datetime
-from memory_profiler import profile
 
 
-# log_file= open('memory_logs/memory7.log', 'w+')
-# log_file1= open('memory_logs/memory7.1.log', 'w+')
-# log_file2= open('memory_logs/memory7.2.log', 'w+')
- 
-# @profile(stream=log_file)
 def query_data(
         pg_cursor,
         query: str,
@@ -38,7 +32,6 @@ def append_date(data):
 
     return df_with_date
     
-# @profile(stream=log_file2)
 def load_data(
         data,
         snowflake_table: str) -> None:
