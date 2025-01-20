@@ -3,7 +3,7 @@ from snowflake.snowpark.types import *
 dtype_dict = {
 #SFC_REWARDS
     'ACCOUNT_PROGRAMS': StructType([
-      StructField('ID',  StringType(), False),
+        StructField('ID',  StringType(), False),
 		StructField('ACCOUNT_ID',  StringType(), False),
 		StructField('PROGRAM_ID',  StringType(), False),
 		StructField('ENABLED',  StringType(), False),

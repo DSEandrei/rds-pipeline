@@ -2,3 +2,4 @@ loguru
 python-dotenv
 snowflake-connector-python
 snowflake-snowpark-python
+psycopg2-binary

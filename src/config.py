@@ -1,5 +1,8 @@
 
 QUERY_TABLES = [
+
+# SFC_Rewards
+
     # {
     #     "rds_table" : "account_programs",
     #     "query" : "SELECT * FROM account_programs",
